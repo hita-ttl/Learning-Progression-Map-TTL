@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grade 10: Triangles - Competency-Level Map</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            overflow: hidden;
+            cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cg transform='rotate(-45 16 16)'%3E%3Crect x='13' y='6' width='6' height='20' fill='%23ffd700' stroke='%23e6c200' stroke-width='0.5'/%3E%3Crect x='13' y='14' width='6' height='4' fill='%23ff8c00'/%3E%3Crect x='13' y='26' width='6' height='3' fill='%23c0c0c0'/%3E%3Crect x='13' y='29' width='6' height='5' rx='1' fill='%23ffb6c1' stroke='%23ff91a4' stroke-width='0.5'/%3E%3Crect x='13' y='2' width='6' height='4' fill='%23f4d1a6'/%3E%3Cpath d='M16,0 L13,4 L19,4 Z' fill='%234a4a4a'/%3E%3Cline x1='16' y1='1' x2='16' y2='4' stroke='%232a2a2a' stroke-width='0.5'/%3E%3C/g%3E%3C/svg%3E") 4 4, auto;
+        }
+
+        /* Top info bar */
+        .top-info-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #e8f4fd;
+            padding: 15px 20px;
+            border-bottom: 1px solid #d1e3f0;
+            z-index: 1000;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .top-info-bar h1 {
+            font-size: 20px;
+            color: #1976d2;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        /* Subsection headers in Grade 10 */
+        .subsection-header {
+            font-size: 14px;
+            font-weight: bold;
+            color: #666;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            padding: 5px 10px;
+            background: rgba(255, 215, 0, 0.2);
+            border-radius: 4px;
+        }
+
+        .top-info-bar .instructions {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .top-info-bar .note {
+            font-size: 12px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            padding-top: 90px; /* Account for top bar */
+        }
+
+        .left-panel {
+            width: 320px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .controls {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .controls h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .level-selector {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .level-selector h3 {
+            font-size: 14px;
+            margin-bottom: 12px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .level-option {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 10px;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .level-option:hover {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .level-header {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .level-checkbox {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            cursor: pointer;
+        }
+
+        .level-indicator {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 8px;
+            font-size: 12px;
+            color: white;
+            text-align: center;
+            line-height: 24px;
+            font-weight: bold;
+        }
+
+        .level-1 { background: #2196f3; }
+        .level-2 { background: #ff9800; }
+        .level-3 { background: #4caf50; }
+
+        .level-name {
+            font-weight: 600;
+            font-size: 13px;
+            color: #333;
+            flex: 1;
+        }
+
+        .level-description {
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            margin-left: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            width: 250px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 1000;
+            line-height: 1.5;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        /* For the left panel, we need to contain the tooltip */
+        .level-selector {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        /* Show tooltip on hover but keep it within panel bounds */
+        .level-option:hover .level-description {
+            opacity: 1;
+            left: 10px;
+            right: 10px;
+            width: auto;
+            top: 100%;
+            transform: translateY(5px);
+            margin-left: 0;
+        }
+
+        .prerequisites-panel {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .prerequisites-panel.show {
+            display: block;
+        }
+
+        .prerequisites-panel h3 {
+            font-size: 14px;
+            margin-bottom: 15px;
+            color: #333;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+
+        .prerequisite-section {
+            margin-bottom: 20px;
+        }
+
+        .prerequisite-section h4 {
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .prerequisite-item {
+            padding: 8px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            font-size: 11px;
+            border-left: 3px solid #ddd;
+            transition: all 0.3s ease;
+        }
+
+        .prerequisite-item.level-1 {
+            background: #e3f2fd;
+            border-left-color: #2196f3;
+        }
+
+        .prerequisite-item.level-2 {
+            background: #fff3e0;
+            border-left-color: #ff9800;
+        }
+
+        .prerequisite-item.level-3 {
+            background: #e8f5e9;
+            border-left-color: #4caf50;
+        }
+
+        .prerequisite-item.grade-6 {
+            border-right: 3px solid #8b4513;
+        }
+
+        .prerequisite-item.grade-7 {
+            border-right: 3px solid #228b22;
+        }
+
+        .prerequisite-item.grade-8 {
+            border-right: 3px solid #800080;
+        }
+
+        .prerequisite-item.grade-9 {
+            border-right: 3px solid #4169e1;
+        }
+        
+        .prerequisite-item.grade-10 {
+            border-right: 3px solid #ffd700;
+        }
+
+        .prerequisite-code {
+            font-weight: bold;
+            color: #2c3e50;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .prerequisite-desc {
+            color: #555;
+            line-height: 1.4;
+        }
+
+        .main-area {
+            flex: 1;
+            position: relative;
+            overflow: auto;
+        }
+
+        #metro-svg {
+            min-width: 1800px;
+            min-height: 1200px;
+            background: white;
+        }
+
+        /* Station styles */
+        .station {
+            cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cg transform='rotate(-45 16 16)'%3E%3Crect x='13' y='6' width='6' height='20' fill='%23ffd700' stroke='%23e6c200' stroke-width='0.5'/%3E%3Crect x='13' y='14' width='6' height='4' fill='%23ff8c00'/%3E%3Crect x='13' y='26' width='6' height='3' fill='%23c0c0c0'/%3E%3Crect x='13' y='29' width='6' height='5' rx='1' fill='%23ffb6c1' stroke='%23ff91a4' stroke-width='0.5'/%3E%3Crect x='13' y='2' width='6' height='4' fill='%23f4d1a6'/%3E%3Cpath d='M16,0 L13,4 L19,4 Z' fill='%234a4a4a'/%3E%3Cline x1='16' y1='1' x2='16' y2='4' stroke='%232a2a2a' stroke-width='0.5'/%3E%3C/g%3E%3C/svg%3E") 4 4, pointer;
+            transition: all 0.3s ease;
+        }
+
+        .station-circle {
+            fill: white;
+            stroke-width: 2;
+            transition: all 0.3s ease;
+        }
+
+        /* Pencil indicator styles */
+        .pencil-indicator {
+            pointer-events: none;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .pencil-indicator.active {
+            opacity: 1;
+        }
+
+        .station.grade-6 .station-circle { stroke: #8b4513; }
+        .station.grade-7 .station-circle { stroke: #228b22; }
+        .station.grade-8 .station-circle { stroke: #800080; }
+        .station.grade-9 .station-circle { stroke: #4169e1; }
+        .station.grade-10 .station-circle { 
+            stroke: #ffd700; 
+            stroke-width: 3;
+            fill: #fffacd;
+        }
+
+        .station.highlighted .station-circle {
+            stroke-width: 4;
+            filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
+        }
+
+        .station.active .station-circle {
+            stroke-width: 4;
+            filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.4));
+        }
+
+        .station-label {
+            font-size: 9px;
+            fill: #333;
+            pointer-events: none;
+            opacity: 0.8;
+            transition: all 0.3s ease;
+            text-anchor: start;
+        }
+
+        .station.active .station-label,
+        .station.highlighted .station-label {
+            opacity: 1;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        /* Grade zones */
+        .grade-zone {
+            fill: none;
+            stroke-width: 2;
+            stroke-dasharray: 10, 5;
+            opacity: 0.2;
+        }
+
+        .grade-6-zone { stroke: #8b4513; fill: #8b451308; }
+        .grade-7-zone { stroke: #228b22; fill: #228b2208; }
+        .grade-8-zone { stroke: #800080; fill: #80008008; }
+        .grade-9-zone { stroke: #4169e1; fill: #4169e108; }
+        .grade-10-zone { 
+            stroke: #d4a017; 
+            fill: #fff5d6;
+            stroke-width: 4;
+            stroke-dasharray: 15, 8;
+            opacity: 0.6;
+        }
+
+        .zone-label {
+            font-size: 20px;
+            font-weight: bold;
+            fill: #999;
+            opacity: 0.3;
+        }
+
+        .zone-label.grade-10 {
+            fill: #000;
+            opacity: 1;
+        }
+
+        /* Sequential path styles */
+        .sequential-path {
+            fill: none;
+            stroke-width: 3;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .sequential-path.active {
+            opacity: 1;
+        }
+        
+        .sequential-path.level-1 {
+            stroke: #2196f3;
+        }
+        
+        .sequential-path.level-2 {
+            stroke: #ff9800;
+        }
+        
+        .sequential-path.level-3 {
+            stroke: #4caf50;
+        }
+
+        /* Connection paths */
+        .connection-path {
+            fill: none;
+            stroke: #ff6b6b;
+            stroke-width: 2;
+            stroke-dasharray: 5, 3;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .connection-path.active {
+            opacity: 0;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+            max-width: 300px;
+        }
+
+        .tooltip.show {
+            opacity: 1;
+        }
+
+        .tooltip .code {
+            font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 5px;
+        }
+
+        /* Zoom controls */
+        .zoom-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 5px;
+            z-index: 100;
+        }
+
+        .zoom-btn {
+            width: 36px;
+            height: 36px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .zoom-btn:hover {
+            background: #f0f0f0;
+            transform: scale(1.1);
+        }
+
+        .info-section {
+            background: #e8f4fd;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 11px;
+            color: #1976d2;
+            line-height: 1.5;
+        }
+
+        .info-section strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-info-bar">
+        <h1>Learning Progression Map: Grade 10, Chapter Triangles</h1>
+        <div class="instructions">How to use: Select a Competency from the Grade 10 box, then select a Prerequisite level from the panel on the left.</div>
+        <div class="note">Note: The grade 10 box contains all competencies that fall within 'Triangles'. The boxes for other grades include only those competencies that serve as prerequisites for Grade 10 Chapter Triangles.</div>
+    </div>
+    
+    <div class="container">
+        <div class="left-panel">
+            <div class="controls">
+                <div class="level-selector">
+                    <h3>Prerequisite Levels</h3>
+                    
+                    <div class="level-option">
+                        <div class="level-header">
+                            <input type="checkbox" class="level-checkbox" id="level-1">
+                            <span class="level-indicator level-1">1</span>
+                            <label for="level-1" class="level-name">Immediate Prerequisites</label>
+                        </div>
+                        <div class="level-description">
+                            Competencies that need to be mastered right before the selected competency
+                        </div>
+                    </div>
+                    
+                    <div class="level-option">
+                        <div class="level-header">
+                            <input type="checkbox" class="level-checkbox" id="level-2">
+                            <span class="level-indicator level-2">2</span>
+                            <label for="level-2" class="level-name">Supporting Prerequisites</label>
+                        </div>
+                        <div class="level-description">
+                            Competencies that enable the immediate prerequisites
+                        </div>
+                    </div>
+                    
+                    <div class="level-option">
+                        <div class="level-header">
+                            <input type="checkbox" class="level-checkbox" id="level-3">
+                            <span class="level-indicator level-3">3</span>
+                            <label for="level-3" class="level-name">Foundational Prerequisites</label>
+                        </div>
+                        <div class="level-description">
+                            All basic building blocks from previous grades leading up to the selected competency
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="prerequisites-panel" id="prerequisites-panel">
+                <h3>Prerequisites for Selected Competency</h3>
+                <div id="prerequisites-content"></div>
+            </div>
+        </div>
+
+        <div class="main-area">
+            <div class="zoom-controls">
+                <button class="zoom-btn" onclick="zoomIn()">+</button>
+                <button class="zoom-btn" onclick="zoomOut()">−</button>
+                <button class="zoom-btn" onclick="resetZoom()">⟲</button>
+            </div>
+
+            <svg id="metro-svg"></svg>
+            
+            <div class="tooltip"></div>
+        </div>
+    </div>
+
+    <script>
+        // Competency data from masterfiles
+        const competencyData = {
+            // Grade 10 Triangles
+            "G10-TRI-6.1-01": {
+                "competency": "Can differentiate between congruent and similar figures",
+                "subsection": "Introduction",
+                "misconception": "All congruent figures are similar AND all similar figures are congruent; Confusing size with shape when determining similarity"
+            },
+            "G10-TRI-6.2-01": {
+                "competency": "Can identify similar figures and explain why they are similar",
+                "subsection": "Similar Figures",
+                "misconception": "All polygons with same number of sides are similar; Only identical figures are similar; Figures must face the same direction to be similar"
+            },
+            "G10-TRI-6.2-02": {
+                "competency": "Can determine if two polygons are similar by verifying corresponding angles are equal and corresponding sides are proportional",
+                "subsection": "Similar Figures",
+                "misconception": "Only need to check angles OR sides, not both; Adding instead of dividing when checking proportions; Not maintaining correct correspondence of vertices"
+            },
+            "G10-TRI-6.2-03": {
+                "competency": "Can calculate scale factor and use it to find unknown measurements in similar figures",
+                "subsection": "Similar Figures",
+                "misconception": "Scale factor is always greater than 1; Applying scale factor incorrectly (multiplying when should divide); Using difference instead of ratio"
+            },
+            "G10-TRI-6.3-01": {
+                "competency": "Can apply the Basic Proportionality Theorem (Thales Theorem) to solve problems",
+                "subsection": "Similarity of Triangles",
+                "misconception": "Any line divides sides proportionally, not just parallel lines; Applying theorem to non-triangle figures; Cross-multiplication errors"
+            },
+            "G10-TRI-6.3-02": {
+                "competency": "Can prove and apply that a line parallel to one side of a triangle divides the other two sides proportionally",
+                "subsection": "Similarity of Triangles",
+                "misconception": "Line must be exactly halfway to divide proportionally; Proportion only works for midpoint; Confusing with angle bisector theorem"
+            },
+            "G10-TRI-6.3-03": {
+                "competency": "Can prove and apply the converse of Basic Proportionality Theorem",
+                "subsection": "Similarity of Triangles",
+                "misconception": "If sides are divided equally, lines are parallel (ignoring proportionality); Assuming converse without checking all conditions"
+            },
+            "G10-TRI-6.3-04": {
+                "competency": "Can use properties of similar triangles to solve complex problems involving multiple triangles",
+                "subsection": "Similarity of Triangles",
+                "misconception": "All triangles in a figure are similar to each other; Properties of one pair apply to all pairs; Not identifying which triangles are actually similar"
+            },
+            "G10-TRI-6.4-01": {
+                "competency": "Can apply AAA (or AA) similarity criterion to prove triangles are similar",
+                "subsection": "Criteria for Similarity of Triangles",
+                "misconception": "Need all three angles when two are sufficient; AA means adjacent angles; Angles must be in same position in both triangles"
+            },
+            "G10-TRI-6.4-02": {
+                "competency": "Can apply SSS similarity criterion to prove triangles are similar",
+                "subsection": "Criteria for Similarity of Triangles",
+                "misconception": "Sides must be equal, not proportional; Any three measurements work; Order of correspondence doesn't matter"
+            },
+            "G10-TRI-6.4-03": {
+                "competency": "Can apply SAS similarity criterion to prove triangles are similar",
+                "subsection": "Criteria for Similarity of Triangles",
+                "misconception": "Any angle between sides works; Angle can be opposite to one side; SAS for similarity same as SAS for congruence"
+            },
+            "G10-TRI-6.4-04": {
+                "competency": "Can determine which similarity criterion to use in a given problem",
+                "subsection": "Criteria for Similarity of Triangles",
+                "misconception": "Always use the same criterion; More information means better proof; Trying criteria randomly without analyzing given information"
+            },
+            "G10-TRI-6.4-05": {
+                "competency": "Can solve real-world problems using triangle similarity",
+                "subsection": "Criteria for Similarity of Triangles",
+                "misconception": "Direct measurement is always needed; Similar triangles must be same orientation; Shadows and objects form congruent, not similar triangles"
+            },
+            "G10-TRI-6.4-06": {
+                "competency": "Can distinguish between similarity and congruence criteria and apply them correctly",
+                "subsection": "Criteria for Similarity of Triangles",
+                "misconception": "Similarity and congruence are interchangeable; Congruent figures are not similar; Same criteria work for both concepts"
+            },
+            "G10-TRI-ADV-01": {
+                "competency": "Can prove properties of similar triangles including ratios of corresponding altitudes and medians",
+                "subsection": "NA",
+                "misconception": "Altitudes have same ratio as perimeter; All segments have same ratio as sides; Ratio depends on which altitude is chosen"
+            },
+            "G10-TRI-ADV-02": {
+                "competency": "Can apply similarity concepts to prove theorems like Pythagoras theorem",
+                "subsection": "NA",
+                "misconception": "Pythagoras theorem only about right triangles, not similarity; Any three similar triangles can prove Pythagoras; Similarity not related to Pythagoras theorem"
+            },
+            // Grade 9 competencies (from Excel)
+            "G9-EG-2-03": {"competency": "Can state and apply Euclids axioms in mathematical reasoning", "subsection": "Euclid's Geometry", "misconception": "Axioms need to be proved; All mathematical statements are axioms; Axioms are same as definitions"},
+            "G9-EG-2-08": {"competency": "Can prove simple geometric statements using Euclids axioms and postulates", "subsection": "Euclid's Geometry", "misconception": "Any logical argument is a proof; Proof by example is sufficient; Can assume what needs to be proved"},
+            "G9-EG-3-02": {"competency": "Can differentiate between proved statements (theorems) and accepted truths (axioms postulates)", "subsection": "Euclid's Geometry", "misconception": "All statements in geometry are theorems; Postulates are less important than theorems; Axioms and theorems are interchangeable"},
+            "G9-EG-4-02": {"competency": "Can appreciate the role of logical reasoning and proof in mathematics", "subsection": "Euclid's Geometry", "misconception": "Proofs are just formal exercises; Intuition is more important than logic; One counterexample doesnt disprove a statement"},
+            "G9-LA-1-01": {"competency": "Can identify and explain real-world applications of lines and angles in architecture and science", "subsection": "Lines and Angles", "misconception": "Geometry is only theoretical; All structures use only right angles; Natural objects dont follow geometric principles"},
+            "G9-LA-2-01": {"competency": "Can distinguish between lines line segments and rays and use appropriate notation", "subsection": "Lines and Angles", "misconception": "Line and line segment are the same; Ray has two endpoints; Notation doesn't matter"},
+            "G9-LA-2-02": {"competency": "Can identify and classify different types of angles (acute right obtuse straight reflex)", "subsection": "Lines and Angles", "misconception": "Angles greater than 180° dont exist; Reflex angle is same as obtuse; Angle size depends on arm length"},
+            "G9-LA-2-03": {"competency": "Can identify adjacent angles and understand their properties including common vertex and arm", "subsection": "Lines and Angles", "misconception": "Any two angles next to each other are adjacent; Adjacent angles must be equal; Adjacent angles always sum to 180°"},
+            "G9-LA-6-01": {"competency": "Can identify and use properties of angles formed by a transversal with parallel lines", "subsection": "Lines and Angles", "misconception": "All angles formed are equal; Properties work even if lines aren't parallel; Transversal must be perpendicular"},
+            "G9-LA-6-02": {"competency": "Can use angle properties to prove lines are parallel (converse theorems)", "subsection": "Lines and Angles", "misconception": "If some angles are equal, lines are parallel; Only need to check one pair of angles; Converse is always true"},
+            "G9-LA-6-03": {"competency": "Can solve complex problems involving parallel lines and transversals", "subsection": "Lines and Angles", "misconception": "Each angle must be calculated separately; All unknown angles are equal; Can assume lines are parallel without proof"},
+            "G9-LA-7-01": {"competency": "Can construct geometric proofs using properties of lines and angles", "subsection": "Lines and Angles", "misconception": "Proof can skip steps if obvious; Diagrams are proofs; Can use properties not yet proved"},
+            "G9-LA-8-01": {"competency": "Can apply angle properties to solve real-world problems", "subsection": "NA", "misconception": "Real objects follow geometric properties exactly; Measurements must be perfect; Approximations invalidate geometric principles"},
+            "G9-TRI-7.1-01": {"competency": "Can identify triangles and describe their basic elements", "subsection": "Triangles", "misconception": "Triangle has 3 vertices and 3 angles only; Sides and angles are independent; Order of vertices doesn't matter in notation"},
+            "G9-TRI-7.2-01": {"competency": "Can explain the concept of congruence and identify congruent figures", "subsection": "Triangles", "misconception": "Congruent means identical position; Similar and congruent are same; Only triangles can be congruent"},
+            "G9-TRI-7.2-02": {"competency": "Can establish and verify correspondence between vertices of congruent triangles", "subsection": "Triangles", "misconception": "Any matching works; Correspondence is always alphabetical; Once congruent, any correspondence is valid"},
+            "G9-TRI-7.2-03": {"competency": "Can apply the concept of CPCT", "subsection": "Triangles", "misconception": "CPCT works before proving congruence; All parts are automatically equal; CPCT applies to similar triangles"},
+            "G9-TRI-7.3-02": {"competency": "Can apply SAS congruence criterion correctly", "subsection": "Triangles", "misconception": "Any angle works with two sides; Angle can be opposite a side; Order doesn't matter"},
+            "G9-TRI-7.3-03": {"competency": "Can distinguish between valid SAS and invalid SSA configurations", "subsection": "Triangles", "misconception": "SSA always works; SAS and SSA are equivalent; Angle position doesn't matter"},
+            "G9-TRI-7.3-04": {"competency": "Can apply ASA congruence criterion", "subsection": "Triangles", "misconception": "Any two angles and a side work; Angles must be adjacent; ASA is same as AAS"},
+            "G9-TRI-7.3-05": {"competency": "Can apply AAS congruence criterion", "subsection": "Triangles", "misconception": "Need the third angle too; AAS doesn't really exist; Side must be between angles"},
+            "G9-TRI-7.3-06": {"competency": "Can explain why AAA is insufficient for congruence", "subsection": "Triangles", "misconception": "AAA proves congruence; Similar means congruent; Size doesn't matter for congruence"},
+            "G9-TRI-7.3-07": {"competency": "Can construct logical proofs for triangle congruence", "subsection": "Triangles", "misconception": "Stating the criterion is enough; Can use any criterion randomly; Proof is just matching parts"},
+            "G9-TRI-7.4-02": {"competency": "Can prove and apply the isosceles triangle theorem", "subsection": "Triangles", "misconception": "All sides must be checked; Works for equilateral only; Base angles can be different"},
+            "G9-TRI-7.4-03": {"competency": "Can prove and apply the converse of isosceles triangle theorem", "subsection": "Triangles", "misconception": "Converse is automatically true; Any two equal angles make isosceles; Must be base angles"},
+            "G9-TRI-7.4-04": {"competency": "Can solve problems involving properties of isosceles triangles", "subsection": "Triangles", "misconception": "Isosceles triangles are always acute; Altitude bisects base angle; All altitudes are equal"},
+            "G9-TRI-7.5-01": {"competency": "Can apply SSS congruence criterion correctly", "subsection": "Triangles", "misconception": "Order of sides doesn't matter; Works with any three measurements; Perimeter equality is enough"},
+            "G9-TRI-7.5-02": {"competency": "Can apply RHS congruence criterion for right triangles", "subsection": "Triangles", "misconception": "Works for any triangles; Need all three sides; Right angle not necessary"},
+            "G9-TRI-7.5-03": {"competency": "Can determine which congruence criterion to apply", "subsection": "Triangles", "misconception": "More information is always better; Any criterion works; Trial and error is best approach"},
+            "G9-TRI-7.5-04": {"competency": "Can prove geometric relationships using congruent triangles", "subsection": "Triangles", "misconception": "Congruence is the only way to prove; Any two triangles can be used; Congruence not needed for properties"},
+            "G9-TRI-7.6-01": {"competency": "Can synthesize and apply all congruence criteria appropriately", "subsection": "NA", "misconception": "Memorizing is understanding; All criteria are equally useful; Complex problems need multiple criteria"}
+        };
+
+        // Add fallback data for missing competencies
+        const fallbackData = {
+            'G6-LA-2.2-01': { competency: 'Can identify a line segment as the shortest path between two points and denote it correctly', subsection: 'Lines and Angles', misconception: 'Line and line segment are interchangeable terms' },
+            'G6-LA-2.5-01': { competency: 'Can identify an angle as formed by two rays with a common starting point (vertex)', subsection: 'Lines and Angles', misconception: 'Angle size depends on the length of the rays' },
+            'G6-LA-2.5-02': { competency: 'Can understand that the size of an angle depends on the amount of rotation not the length of arms', subsection: 'Lines and Angles', misconception: 'Longer arms mean bigger angles' },
+            'G6-LA-2.8-02': { competency: 'Can identify a right angle as exactly half of a straight angle measuring 90°', subsection: 'Lines and Angles', misconception: 'Right angles can be approximately 90°' },
+            'G6-LA-2.8-03': { competency: 'Can classify angles as acute right obtuse or straight based on their measures', subsection: 'Lines and Angles', misconception: 'Angle classification depends on appearance not measurement' },
+            'G6-LA-2.9-02': { competency: 'Can use a protractor correctly to measure angles', subsection: 'Lines and Angles', misconception: 'Either scale on protractor gives the same reading' },
+            'G6-LA-2.9-03': { competency: 'Can measure angles by aligning one arm with 0° and reading where the other arm points', subsection: 'Lines and Angles', misconception: 'Can start measuring from any line on protractor' },
+            'G6-LA-2.10-01': { competency: 'Can draw angles of given measures using a protractor', subsection: 'Lines and Angles', misconception: 'Angle can be drawn from any starting line' },
+            'G6-LA-2.11-04': { competency: 'Can solve problems involving angle relationships in straight lines', subsection: 'Lines and Angles', misconception: 'Angles on a line can sum to any value' },
+            'G6-LA-2.11-05': { competency: 'Can identify angles in real-world contexts like clocks doors and swings', subsection: 'Lines and Angles', misconception: 'Real-world angles are different from geometric angles' },
+            'G6-LA-NA-02': { competency: 'Can understand that perpendicular lines meet at right angles', subsection: 'Extended Learning', misconception: 'Perpendicular lines can meet at any angle' },
+            'G6-PC-8.0-02': { competency: 'Can use compass to transfer lengths without measuring', subsection: 'Practical Geometry', misconception: 'Compass can only draw circles' },
+            'G6-PC-8.1-03': { competency: 'Can use a compass to draw circles with a given radius', subsection: 'Practical Geometry', misconception: 'Radius and diameter are the same' },
+            'G6-PC-8.3-02': { competency: 'Can construct perpendicular lines using geometric tools', subsection: 'Practical Geometry', misconception: 'Perpendicular lines can be drawn by eye' },
+            'G6-SYM-9.1-02': { competency: 'Can verify if a line is a line of symmetry by checking if the two parts overlap completely when folded along that line', subsection: 'Symmetry', misconception: 'Any line through a figure is a line of symmetry' },
+            'G7-PIL-5.1-02': { competency: 'Can identify and measure the four angles formed when two lines intersect', subsection: 'Lines and Angles', misconception: 'Intersecting lines form random angles' },
+            'G7-PIL-5.3-02': { competency: 'Can identify parallel lines as lines on the same plane that never meet however far extended', subsection: 'Lines and Angles', misconception: 'Parallel lines eventually meet at infinity' },
+            'G7-PIL-5.5-01': { competency: 'Can identify a transversal as a line that intersects two other lines and recognize that 8 angles are formed', subsection: 'Lines and Angles', misconception: 'Transversal must be perpendicular to the lines' },
+            'G7-PIL-5.6-01': { competency: 'Can identify corresponding angles formed when a transversal intersects two lines', subsection: 'Lines and Angles', misconception: 'Any angles on same side are corresponding' },
+            'G7-PIL-5.6-02': { competency: 'Can apply the property that corresponding angles are equal when a transversal crosses parallel lines', subsection: 'Lines and Angles', misconception: 'Corresponding angles are always equal' },
+            'G7-PIL-5.7-01': { competency: 'Can construct parallel lines using ruler and set square based on equal corresponding angles', subsection: 'Lines and Angles', misconception: 'Parallel lines can be drawn by keeping same distance' },
+            'G7-PIL-5.8-01': { competency: 'Can identify alternate angles formed by a transversal and recognize they are equal for parallel lines', subsection: 'Lines and Angles', misconception: 'All angles formed by transversal are alternate' },
+            'G7-PIL-5.8-02': { competency: 'Can use relationships between corresponding and vertically opposite angles to prove alternate angles are equal', subsection: 'Lines and Angles', misconception: 'Alternate angles equal without parallel lines' },
+            'G7-PIL-NA-01': { competency: 'Can solve complex problems involving multiple parallel lines and transversals', subsection: 'Extended Learning', misconception: 'Each transversal creates independent angle sets' },
+            'G7-TTIL-7.1-02': { competency: 'Can construct an equilateral triangle using compass and ruler when given a side length', subsection: 'Triangles', misconception: 'Equilateral triangle has one equal side' },
+            'G7-TTIL-7.2-02': { competency: 'Can construct a triangle given three side lengths using compass and ruler', subsection: 'Triangles', misconception: 'Any three lengths form a triangle' },
+            'G7-TTIL-7.2-03': { competency: 'Can apply the triangle inequality theorem to determine if given lengths can form a triangle', subsection: 'Triangles', misconception: 'Sum of two sides equals third side is valid' },
+            'G7-TTIL-7.3-01': { competency: 'Can construct a triangle given two sides and the included angle (SAS)', subsection: 'Triangles', misconception: 'Angle can be anywhere with two sides' },
+            'G7-TTIL-7.3-04': { competency: 'Can prove that the sum of angles in any triangle equals 180° using parallel lines', subsection: 'Triangles', misconception: 'Angle sum varies with triangle size' },
+            'G7-TTIL-7.3-05': { competency: 'Can find the third angle of a triangle given two angles', subsection: 'Triangles', misconception: 'Need all three angle measures' },
+            'G7-TTIL-7.3-06': { competency: 'Can identify and calculate exterior angles of triangles', subsection: 'Triangles', misconception: 'Exterior angle is outside the triangle' },
+            'G7-TTIL-7.3-07': { competency: 'Can apply the exterior angle theorem (exterior angle equals sum of non-adjacent interior angles)', subsection: 'Triangles', misconception: 'Exterior angle equals adjacent interior angle' },
+            'G7-TTIL-7.4-01': { competency: 'Can identify and construct altitudes of triangles from vertices to opposite sides', subsection: 'Triangles', misconception: 'Altitude always lies inside triangle' },
+            'G7-TTIL-7.4-02': { competency: 'Can construct altitudes using set square and ruler for precise perpendiculars', subsection: 'Triangles', misconception: 'Altitude can be drawn at any angle' },
+            'G7-TTIL-7.5-01': { competency: 'Can classify triangles by sides (equilateral, isosceles, scalene) and angles (acute, right, obtuse)', subsection: 'Triangles', misconception: 'Triangle can be both right and obtuse' },
+            'G7-TTIL-7.5-02': { competency: 'Can identify that acute triangles have all angles less than 90° while obtuse triangles have one angle greater than 90°', subsection: 'Triangles', misconception: 'Obtuse triangle has all obtuse angles' },
+            'G8-UQ-3.1-01': { competency: 'Can identify and classify curves as simple closed curves and polygons', subsection: 'Understanding Quadrilaterals', misconception: 'All closed figures are polygons' },
+            'G8-UQ-3.2-01': { competency: 'Can calculate and verify that the sum of exterior angles of any polygon is 360°', subsection: 'Understanding Quadrilaterals', misconception: 'Exterior angle sum depends on number of sides' },
+            'G8-UQ-3.2-02': { competency: 'Can find the measure of each exterior angle in a regular polygon', subsection: 'Understanding Quadrilaterals', misconception: 'All polygons have equal exterior angles' },
+            'G8-UQ-3.3-03': { competency: 'Can identify parallelograms and use properties of opposite sides and angles', subsection: 'Understanding Quadrilaterals', misconception: 'Any quadrilateral with parallel sides is parallelogram' },
+            'G8-UQ-3.3.4-01': { competency: 'Can identify and use relationships between adjacent and opposite elements in parallelograms', subsection: 'Understanding Quadrilaterals', misconception: 'Adjacent angles in parallelogram are equal' }
+        };
+
+        // Merge fallback data
+        Object.entries(fallbackData).forEach(([code, data]) => {
+            if (!competencyData[code]) {
+                competencyData[code] = data;
+            }
+        });
+
+        // Grade 10 subsection groups
+        const g10SubsectionGroups = {
+            "Introduction": ["G10-TRI-6.1-01"],
+            "Similar Figures": ["G10-TRI-6.2-01", "G10-TRI-6.2-02", "G10-TRI-6.2-03"],
+            "Similarity of Triangles": ["G10-TRI-6.3-01", "G10-TRI-6.3-02", "G10-TRI-6.3-03", "G10-TRI-6.3-04"],
+            "Criteria for Similarity of Triangles": ["G10-TRI-6.4-01", "G10-TRI-6.4-02", "G10-TRI-6.4-03", "G10-TRI-6.4-04", "G10-TRI-6.4-05", "G10-TRI-6.4-06"],
+            "Extended Learning": ["G10-TRI-ADV-01", "G10-TRI-ADV-02"]
+        };
+
+        // All competency stations with exact codes and positions
+        const stations = [
+            // Grade 6 Stations - Lines & Angles
+            { code: 'G6-LA-2.2-01', name: 'Can identify a line segment as the shortest path between two points and denote it correctly', grade: 6, x: 70, y: 200 },
+            { code: 'G6-LA-2.5-01', name: 'Can identify an angle as formed by two rays with a common starting point (vertex)', grade: 6, x: 70, y: 250 },
+            { code: 'G6-LA-2.5-02', name: 'Can understand that the size of an angle depends on the amount of rotation not the length of arms', grade: 6, x: 70, y: 300 },
+            { code: 'G6-LA-2.8-02', name: 'Can identify a right angle as exactly half of a straight angle measuring 90°', grade: 6, x: 70, y: 350 },
+            { code: 'G6-LA-2.8-03', name: 'Can classify angles as acute right obtuse or straight based on their measures', grade: 6, x: 70, y: 400 },
+            { code: 'G6-LA-2.9-02', name: 'Can use a protractor correctly to measure angles', grade: 6, x: 70, y: 450 },
+            { code: 'G6-LA-2.9-03', name: 'Can measure angles by aligning one arm with 0° and reading where the other arm points', grade: 6, x: 70, y: 500 },
+            { code: 'G6-LA-2.10-01', name: 'Can draw angles of given measures using a protractor', grade: 6, x: 70, y: 550 },
+            { code: 'G6-LA-2.11-04', name: 'Can solve problems involving angle relationships in straight lines', grade: 6, x: 70, y: 600 },
+            { code: 'G6-LA-2.11-05', name: 'Can identify angles in real-world contexts like clocks doors and swings', grade: 6, x: 70, y: 650 },
+            { code: 'G6-LA-NA-02', name: 'Can understand that perpendicular lines meet at right angles', grade: 6, x: 70, y: 700 },
+            
+            // Grade 6 - Constructions
+            { code: 'G6-PC-8.0-02', name: 'Can use compass to transfer lengths without measuring', grade: 6, x: 180, y: 300 },
+            { code: 'G6-PC-8.1-03', name: 'Can use a compass to draw circles with a given radius', grade: 6, x: 180, y: 350 },
+            { code: 'G6-PC-8.3-02', name: 'Can construct perpendicular lines using geometric tools', grade: 6, x: 180, y: 400 },
+            
+            // Grade 6 - Symmetry
+            { code: 'G6-SYM-9.1-02', name: 'Can verify if a line is a line of symmetry by checking if the two parts overlap completely when folded along that line', grade: 6, x: 180, y: 500 },
+            
+            // Grade 7 Stations - Parallel Lines
+            { code: 'G7-PIL-5.1-02', name: 'Can identify and measure the four angles formed when two lines intersect', grade: 7, x: 340, y: 200 },
+            { code: 'G7-PIL-5.3-02', name: 'Can identify parallel lines as lines on the same plane that never meet however far extended', grade: 7, x: 340, y: 250 },
+            { code: 'G7-PIL-5.5-01', name: 'Can identify a transversal as a line that intersects two other lines and recognize that 8 angles are formed', grade: 7, x: 340, y: 300 },
+            { code: 'G7-PIL-5.6-01', name: 'Can identify corresponding angles formed when a transversal intersects two lines', grade: 7, x: 340, y: 350 },
+            { code: 'G7-PIL-5.6-02', name: 'Can apply the property that corresponding angles are equal when a transversal crosses parallel lines', grade: 7, x: 340, y: 400 },
+            { code: 'G7-PIL-5.7-01', name: 'Can construct parallel lines using ruler and set square based on equal corresponding angles', grade: 7, x: 340, y: 450 },
+            { code: 'G7-PIL-5.8-01', name: 'Can identify alternate angles formed by a transversal and recognize they are equal for parallel lines', grade: 7, x: 340, y: 500 },
+            { code: 'G7-PIL-5.8-02', name: 'Can use relationships between corresponding and vertically opposite angles to prove alternate angles are equal', grade: 7, x: 340, y: 550 },
+            { code: 'G7-PIL-NA-01', name: 'Can solve complex problems involving multiple parallel lines and transversals', grade: 7, x: 340, y: 600 },
+            
+            // Grade 7 - Triangles
+            { code: 'G7-TTIL-7.1-02', name: 'Can construct an equilateral triangle using compass and ruler when given a side length', grade: 7, x: 450, y: 250 },
+            { code: 'G7-TTIL-7.2-02', name: 'Can construct a triangle given three side lengths using compass and ruler', grade: 7, x: 450, y: 300 },
+            { code: 'G7-TTIL-7.2-03', name: 'Can apply the triangle inequality theorem to determine if given lengths can form a triangle', grade: 7, x: 450, y: 350 },
+            { code: 'G7-TTIL-7.3-01', name: 'Can construct a triangle given two sides and the included angle (SAS)', grade: 7, x: 450, y: 400 },
+            { code: 'G7-TTIL-7.3-04', name: 'Can prove that the sum of angles in any triangle equals 180° using parallel lines', grade: 7, x: 450, y: 450 },
+            { code: 'G7-TTIL-7.3-05', name: 'Can find the third angle of a triangle given two angles', grade: 7, x: 450, y: 500 },
+            { code: 'G7-TTIL-7.3-06', name: 'Can identify and calculate exterior angles of triangles', grade: 7, x: 450, y: 550 },
+            { code: 'G7-TTIL-7.3-07', name: 'Can apply the exterior angle theorem (exterior angle equals sum of non-adjacent interior angles)', grade: 7, x: 450, y: 600 },
+            { code: 'G7-TTIL-7.4-01', name: 'Can identify and construct altitudes of triangles from vertices to opposite sides', grade: 7, x: 450, y: 650 },
+            { code: 'G7-TTIL-7.4-02', name: 'Can construct altitudes using set square and ruler for precise perpendiculars', grade: 7, x: 450, y: 700 },
+            { code: 'G7-TTIL-7.5-01', name: 'Can classify triangles by sides (equilateral, isosceles, scalene) and angles (acute, right, obtuse)', grade: 7, x: 450, y: 750 },
+            { code: 'G7-TTIL-7.5-02', name: 'Can identify that acute triangles have all angles less than 90° while obtuse triangles have one angle greater than 90°', grade: 7, x: 450, y: 800 },
+            
+            // Grade 8 Stations
+            { code: 'G8-UQ-3.1-01', name: 'Can identify and classify curves as simple closed curves and polygons', grade: 8, x: 610, y: 200 },
+            { code: 'G8-UQ-3.2-01', name: 'Can calculate and verify that the sum of exterior angles of any polygon is 360°', grade: 8, x: 610, y: 250 },
+            { code: 'G8-UQ-3.2-02', name: 'Can find the measure of each exterior angle in a regular polygon', grade: 8, x: 610, y: 300 },
+            { code: 'G8-UQ-3.3-03', name: 'Can identify parallelograms and use properties of opposite sides and angles', grade: 8, x: 610, y: 350 },
+            { code: 'G8-UQ-3.3.4-01', name: 'Can identify and use relationships between adjacent and opposite elements in parallelograms', grade: 8, x: 610, y: 400 },
+            
+            // Grade 9 Stations
+            // Column 1
+            { code: 'G9-EG-2-03', name: 'Can state and apply Euclid\'s axioms in mathematical reasoning', grade: 9, x: 780, y: 200 },
+            { code: 'G9-EG-2-08', name: 'Can prove simple geometric statements using Euclid\'s axioms and postulates', grade: 9, x: 780, y: 300 },
+            { code: 'G9-EG-3-02', name: 'Can differentiate between proved statements (theorems) and accepted truths (axioms/postulates)', grade: 9, x: 780, y: 400 },
+            { code: 'G9-EG-4-02', name: 'Can appreciate the role of logical reasoning and proof in mathematics', grade: 9, x: 780, y: 500 },
+            { code: 'G9-LA-1-01', name: 'Can identify and explain real-world applications of lines and angles in architecture and science', grade: 9, x: 780, y: 600 },
+            { code: 'G9-LA-2-01', name: 'Can distinguish between lines line segments and rays and use appropriate notation', grade: 9, x: 780, y: 700 },
+            { code: 'G9-LA-2-02', name: 'Can identify and classify different types of angles (acute right obtuse straight reflex)', grade: 9, x: 780, y: 800 },
+            
+            // Column 2
+            { code: 'G9-LA-2-03', name: 'Can identify adjacent angles and understand their properties including common vertex and arm', grade: 9, x: 880, y: 200 },
+            { code: 'G9-LA-6-01', name: 'Can identify and use properties of angles formed by a transversal with parallel lines (corresponding alternate interior co-interior)', grade: 9, x: 880, y: 300 },
+            { code: 'G9-LA-6-02', name: 'Can use angle properties to prove lines are parallel (converse theorems)', grade: 9, x: 880, y: 400 },
+            { code: 'G9-LA-6-03', name: 'Can solve complex problems involving parallel lines and transversals including finding multiple unknown angles', grade: 9, x: 880, y: 500 },
+            { code: 'G9-LA-7-01', name: 'Can construct geometric proofs using properties of lines and angles including deductive reasoning', grade: 9, x: 880, y: 600 },
+            { code: 'G9-LA-8-01', name: 'Can apply angle properties to solve real-world problems involving parallel and intersecting lines', grade: 9, x: 880, y: 700 },
+            { code: 'G9-TRI-7.1-01', name: 'Can identify triangles and describe their basic elements (sides angles vertices) and notation', grade: 9, x: 880, y: 800 },
+            
+            // Column 3
+            { code: 'G9-TRI-7.2-01', name: 'Can explain the concept of congruence and identify congruent figures in real-world contexts', grade: 9, x: 980, y: 200 },
+            { code: 'G9-TRI-7.2-02', name: 'Can establish and verify correspondence between vertices of congruent triangles', grade: 9, x: 980, y: 300 },
+            { code: 'G9-TRI-7.2-03', name: 'Can apply the concept of CPCT (Corresponding Parts of Congruent Triangles)', grade: 9, x: 980, y: 400 },
+            { code: 'G9-TRI-7.3-02', name: 'Can apply SAS (Side-Angle-Side) congruence criterion correctly including identifying the included angle', grade: 9, x: 980, y: 500 },
+            { code: 'G9-TRI-7.3-03', name: 'Can distinguish between valid SAS and invalid SSA or ASS configurations', grade: 9, x: 980, y: 600 },
+            { code: 'G9-TRI-7.3-04', name: 'Can apply ASA (Angle-Side-Angle) congruence criterion and prove it using SAS', grade: 9, x: 980, y: 700 },
+            { code: 'G9-TRI-7.3-05', name: 'Can apply AAS (Angle-Angle-Side) congruence criterion understanding angle sum property', grade: 9, x: 980, y: 800 },
+            
+            // Column 4
+            { code: 'G9-TRI-7.3-06', name: 'Can explain why AAA (three equal angles) is insufficient for congruence', grade: 9, x: 1080, y: 200 },
+            { code: 'G9-TRI-7.3-07', name: 'Can construct logical proofs for triangle congruence using given information', grade: 9, x: 1080, y: 280 },
+            { code: 'G9-TRI-7.4-02', name: 'Can prove and apply the isosceles triangle theorem (equal sides imply equal opposite angles)', grade: 9, x: 1080, y: 360 },
+            { code: 'G9-TRI-7.4-03', name: 'Can prove and apply the converse of isosceles triangle theorem', grade: 9, x: 1080, y: 440 },
+            { code: 'G9-TRI-7.4-04', name: 'Can solve problems involving properties of isosceles triangles in complex figures', grade: 9, x: 1080, y: 520 },
+            { code: 'G9-TRI-7.5-01', name: 'Can apply SSS (Side-Side-Side) congruence criterion correctly', grade: 9, x: 1080, y: 600 },
+            { code: 'G9-TRI-7.5-02', name: 'Can apply RHS (Right angle-Hypotenuse-Side) congruence criterion for right triangles', grade: 9, x: 1080, y: 680 },
+            { code: 'G9-TRI-7.5-03', name: 'Can determine which congruence criterion to apply in different problem contexts', grade: 9, x: 1080, y: 760 },
+            { code: 'G9-TRI-7.5-04', name: 'Can prove geometric relationships using congruent triangles (parallel lines perpendicular bisectors)', grade: 9, x: 1080, y: 840 },
+            { code: 'G9-TRI-7.6-01', name: 'Can synthesize and apply all congruence criteria appropriately', grade: 9, x: 1080, y: 920 },
+            
+            // Grade 10 Stations - Reorganized by subsection with proper formatting
+            // Introduction subsection
+            { code: 'G10-TRI-6.1-01', name: 'Can differentiate between congruent and similar figures', grade: 10, x: 1200, y: 220 },
+            
+            // Similar Figures subsection  
+            { code: 'G10-TRI-6.2-01', name: 'Can identify similar figures and explain why they are similar', grade: 10, x: 1200, y: 300 },
+            { code: 'G10-TRI-6.2-02', name: 'Can determine if two polygons are similar by verifying corresponding angles are equal and corresponding sides are proportional', grade: 10, x: 1200, y: 350 },
+            { code: 'G10-TRI-6.2-03', name: 'Can calculate scale factor and use it to find unknown measurements in similar figures', grade: 10, x: 1200, y: 400 },
+            
+            // Similarity of Triangles subsection - split into 2 columns
+            { code: 'G10-TRI-6.3-01', name: 'Can apply the Basic Proportionality Theorem (Thales Theorem) to solve problems', grade: 10, x: 1200, y: 480 },
+            { code: 'G10-TRI-6.3-02', name: 'Can prove and apply that a line parallel to one side of a triangle divides the other two sides proportionally', grade: 10, x: 1200, y: 530 },
+            { code: 'G10-TRI-6.3-03', name: 'Can prove and apply the converse of Basic Proportionality Theorem', grade: 10, x: 1330, y: 480 },
+            { code: 'G10-TRI-6.3-04', name: 'Can use properties of similar triangles to solve complex problems involving multiple triangles', grade: 10, x: 1330, y: 530 },
+            
+            // Criteria for Similarity of Triangles subsection
+            { code: 'G10-TRI-6.4-01', name: 'Can apply AAA (or AA) similarity criterion to prove triangles are similar', grade: 10, x: 1200, y: 610 },
+            { code: 'G10-TRI-6.4-02', name: 'Can apply SSS similarity criterion to prove triangles are similar', grade: 10, x: 1200, y: 660 },
+            { code: 'G10-TRI-6.4-03', name: 'Can apply SAS similarity criterion to prove triangles are similar', grade: 10, x: 1200, y: 710 },
+            { code: 'G10-TRI-6.4-04', name: 'Can determine which similarity criterion to use in a given problem', grade: 10, x: 1330, y: 610 },
+            { code: 'G10-TRI-6.4-05', name: 'Can solve real-world problems using triangle similarity', grade: 10, x: 1330, y: 660 },
+            { code: 'G10-TRI-6.4-06', name: 'Can distinguish between similarity and congruence criteria and apply them correctly', grade: 10, x: 1330, y: 710 },
+            
+            // Extended Learning subsection
+            { code: 'G10-TRI-ADV-01', name: 'Can prove properties of similar triangles including ratios of corresponding altitudes and medians', grade: 10, x: 1200, y: 790 },
+            { code: 'G10-TRI-ADV-02', name: 'Can apply similarity concepts to prove theorems like Pythagoras theorem', grade: 10, x: 1200, y: 840 }
+        ];
+
+        // Corrected connections based on mathematical and pedagogical accuracy
+        const connections = [
+            // Basic geometric concepts needed throughout
+            { from: 'G6-LA-2.2-01', to: 'G6-LA-2.5-01' }, // line segments before angles
+            { from: 'G6-LA-2.5-01', to: 'G6-LA-2.5-02' }, // angle definition before size concept
+            { from: 'G6-LA-2.5-02', to: 'G6-LA-2.8-02' }, // angle size before right angle
+            { from: 'G6-LA-2.8-02', to: 'G6-LA-2.8-03' }, // right angle before classification
+            { from: 'G6-LA-2.5-01', to: 'G6-LA-2.9-02' }, // angles before measuring
+            { from: 'G6-LA-2.9-02', to: 'G6-LA-2.9-03' }, // protractor use before specific technique
+            { from: 'G6-LA-2.9-03', to: 'G6-LA-2.10-01' }, // measuring before drawing
+            { from: 'G6-LA-2.8-03', to: 'G6-LA-2.11-04' }, // angle types before relationships
+            { from: 'G6-LA-2.5-01', to: 'G6-LA-2.11-05' }, // angles before real-world
+            { from: 'G6-LA-2.8-02', to: 'G6-LA-NA-02' }, // right angles before perpendicular
+            
+            // Compass skills
+            { from: 'G6-PC-8.0-02', to: 'G6-PC-8.1-03' }, // transfer lengths before circles
+            { from: 'G6-LA-NA-02', to: 'G6-PC-8.3-02' }, // perpendicular concept before construction
+            
+            // Grade 7 - Parallel Lines
+            { from: 'G6-LA-2.5-01', to: 'G7-PIL-5.1-02' }, // angles before intersection
+            { from: 'G6-LA-2.9-02', to: 'G7-PIL-5.1-02' }, // measuring angles
+            { from: 'G6-LA-2.2-01', to: 'G7-PIL-5.3-02' }, // lines before parallel lines
+            { from: 'G7-PIL-5.3-02', to: 'G7-PIL-5.5-01' }, // parallel lines before transversal
+            { from: 'G7-PIL-5.1-02', to: 'G7-PIL-5.5-01' }, // intersection angles before transversal
+            { from: 'G7-PIL-5.5-01', to: 'G7-PIL-5.6-01' }, // transversal before corresponding angles
+            { from: 'G7-PIL-5.6-01', to: 'G7-PIL-5.6-02' }, // identify before property
+            { from: 'G7-PIL-5.6-02', to: 'G7-PIL-5.7-01' }, // property before construction
+            { from: 'G6-LA-2.10-01', to: 'G7-PIL-5.7-01' }, // angle drawing skills
+            { from: 'G7-PIL-5.6-01', to: 'G7-PIL-5.8-01' }, // corresponding before alternate
+            { from: 'G7-PIL-5.1-02', to: 'G7-PIL-5.8-01' }, // vertically opposite angles
+            { from: 'G7-PIL-5.8-01', to: 'G7-PIL-5.8-02' }, // identify before proof
+            { from: 'G7-PIL-5.6-02', to: 'G7-PIL-5.8-02' }, // corresponding angles for proof
+            { from: 'G7-PIL-5.8-02', to: 'G7-PIL-NA-01' }, // proofs before complex problems
+            
+            // Grade 7 - Triangles
+            { from: 'G6-PC-8.1-03', to: 'G7-TTIL-7.1-02' }, // compass circles for equilateral
+            { from: 'G6-PC-8.0-02', to: 'G7-TTIL-7.2-02' }, // transfer lengths for SSS
+            { from: 'G7-TTIL-7.1-02', to: 'G7-TTIL-7.2-02' }, // equilateral before general triangles
+            { from: 'G6-LA-2.2-01', to: 'G7-TTIL-7.2-03' }, // line segments for inequality
+            { from: 'G7-TTIL-7.2-02', to: 'G7-TTIL-7.2-03' }, // construction before inequality check
+            { from: 'G6-LA-2.10-01', to: 'G7-TTIL-7.3-01' }, // angle drawing for SAS
+            { from: 'G7-TTIL-7.2-02', to: 'G7-TTIL-7.3-01' }, // side construction skills
+            { from: 'G7-PIL-5.8-01', to: 'G7-TTIL-7.3-04' }, // alternate angles for proof
+            { from: 'G7-PIL-5.3-02', to: 'G7-TTIL-7.3-04' }, // parallel lines for proof
+            { from: 'G7-TTIL-7.3-04', to: 'G7-TTIL-7.3-05' }, // angle sum before finding angles
+            { from: 'G7-TTIL-7.3-04', to: 'G7-TTIL-7.3-06' }, // angle sum for exterior angles
+            { from: 'G7-TTIL-7.3-06', to: 'G7-TTIL-7.3-07' }, // identify before theorem
+            { from: 'G6-PC-8.3-02', to: 'G7-TTIL-7.4-01' }, // perpendicular construction
+            { from: 'G6-LA-NA-02', to: 'G7-TTIL-7.4-01' }, // perpendicular concept
+            { from: 'G7-TTIL-7.4-01', to: 'G7-TTIL-7.4-02' }, // concept before precise construction
+            { from: 'G6-LA-2.8-03', to: 'G7-TTIL-7.5-01' }, // angle types for classification
+            { from: 'G7-TTIL-7.2-02', to: 'G7-TTIL-7.5-01' }, // triangle construction before classification
+            { from: 'G7-TTIL-7.5-01', to: 'G7-TTIL-7.5-02' }, // classification before specific properties
+            
+            // Grade 8 - Polygons
+            { from: 'G7-TTIL-7.5-01', to: 'G8-UQ-3.1-01' }, // triangles before polygons
+            { from: 'G7-TTIL-7.3-06', to: 'G8-UQ-3.2-01' }, // exterior angles of triangles
+            { from: 'G7-TTIL-7.3-07', to: 'G8-UQ-3.2-01' }, // exterior angle theorem
+            { from: 'G8-UQ-3.2-01', to: 'G8-UQ-3.2-02' }, // general before regular polygons
+            { from: 'G7-PIL-5.3-02', to: 'G8-UQ-3.3-03' }, // parallel lines for parallelograms
+            { from: 'G8-UQ-3.1-01', to: 'G8-UQ-3.3-03' }, // polygons before parallelograms
+            { from: 'G8-UQ-3.3-03', to: 'G8-UQ-3.3.4-01' }, // basic before relationships
+            
+            // Grade 9 - Euclidean Geometry and Proofs
+            { from: 'G6-LA-2.5-01', to: 'G9-EG-2-03' }, // basic concepts for axioms
+            { from: 'G9-EG-2-03', to: 'G9-EG-2-08' }, // axioms before proofs
+            { from: 'G9-EG-2-08', to: 'G9-EG-3-02' }, // proofs before theorem concept
+            { from: 'G9-EG-3-02', to: 'G9-EG-4-02' }, // understanding before appreciation
+            
+            // Grade 9 - Lines and Angles (advanced)
+            { from: 'G6-LA-2.2-01', to: 'G9-LA-2-01' }, // basic lines before notation
+            { from: 'G6-LA-2.11-05', to: 'G9-LA-1-01' }, // real-world basics
+            { from: 'G6-LA-2.8-03', to: 'G9-LA-2-02' }, // basic classification before reflex
+            { from: 'G7-PIL-5.1-02', to: 'G9-LA-2-02' }, // intersecting lines for reflex
+            { from: 'G6-LA-2.5-01', to: 'G9-LA-2-03' }, // angles before adjacent
+            { from: 'G7-PIL-5.1-02', to: 'G9-LA-2-03' }, // intersection for adjacent angles
+            { from: 'G7-PIL-5.6-02', to: 'G9-LA-6-01' }, // corresponding property
+            { from: 'G7-PIL-5.8-01', to: 'G9-LA-6-01' }, // alternate angles
+            { from: 'G7-PIL-NA-01', to: 'G9-LA-6-01' }, // complex problems experience
+            { from: 'G9-LA-6-01', to: 'G9-LA-6-02' }, // properties before converse
+            { from: 'G9-EG-2-08', to: 'G9-LA-6-02' }, // proof methods
+            { from: 'G9-LA-6-02', to: 'G9-LA-6-03' }, // converse before complex
+            { from: 'G9-EG-2-08', to: 'G9-LA-7-01' }, // proof methods
+            { from: 'G9-LA-6-03', to: 'G9-LA-7-01' }, // complex problems for proofs
+            { from: 'G9-LA-6-03', to: 'G9-LA-8-01' }, // complex before applications
+            
+            // Grade 9 - Triangle Congruence
+            { from: 'G7-TTIL-7.5-01', to: 'G9-TRI-7.1-01' }, // classification before elements
+            { from: 'G9-TRI-7.1-01', to: 'G9-TRI-7.2-01' }, // elements before congruence
+            { from: 'G6-SYM-9.1-02', to: 'G9-TRI-7.2-01' }, // symmetry for congruence intuition
+            { from: 'G9-TRI-7.2-01', to: 'G9-TRI-7.2-02' }, // concept before correspondence
+            { from: 'G9-TRI-7.2-02', to: 'G9-TRI-7.2-03' }, // correspondence before CPCT
+            { from: 'G7-TTIL-7.3-01', to: 'G9-TRI-7.3-02' }, // SAS construction experience
+            { from: 'G9-TRI-7.2-02', to: 'G9-TRI-7.3-02' }, // correspondence for criteria
+            { from: 'G9-TRI-7.3-02', to: 'G9-TRI-7.3-03' }, // SAS before limitations
+            { from: 'G9-TRI-7.2-02', to: 'G9-TRI-7.3-04' }, // correspondence for ASA
+            { from: 'G7-TTIL-7.3-04', to: 'G9-TRI-7.3-04' }, // angle sum property
+            { from: 'G9-TRI-7.3-04', to: 'G9-TRI-7.3-05' }, // ASA before AAS
+            { from: 'G7-TTIL-7.3-04', to: 'G9-TRI-7.3-06' }, // angle sum for AAA
+            { from: 'G9-TRI-7.3-06', to: 'G9-TRI-7.3-07' }, // understanding limitations
+            { from: 'G9-EG-2-08', to: 'G9-TRI-7.3-07' }, // proof methods
+            { from: 'G9-TRI-7.2-03', to: 'G9-TRI-7.3-07' }, // CPCT for proofs
+            { from: 'G7-TTIL-7.5-01', to: 'G9-TRI-7.4-02' }, // isosceles identification
+            { from: 'G9-TRI-7.2-03', to: 'G9-TRI-7.4-02' }, // CPCT for theorem
+            { from: 'G9-TRI-7.4-02', to: 'G9-TRI-7.4-03' }, // theorem before converse
+            { from: 'G9-TRI-7.4-03', to: 'G9-TRI-7.4-04' }, // both for complex problems
+            { from: 'G7-TTIL-7.2-02', to: 'G9-TRI-7.5-01' }, // SSS construction
+            { from: 'G9-TRI-7.2-02', to: 'G9-TRI-7.5-01' }, // correspondence for SSS
+            { from: 'G6-LA-2.8-02', to: 'G9-TRI-7.5-02' }, // right angles
+            { from: 'G7-TTIL-7.5-01', to: 'G9-TRI-7.5-02' }, // right triangles
+            { from: 'G9-TRI-7.3-02', to: 'G9-TRI-7.5-03' }, // SAS criterion
+            { from: 'G9-TRI-7.3-04', to: 'G9-TRI-7.5-03' }, // ASA criterion
+            { from: 'G9-TRI-7.5-01', to: 'G9-TRI-7.5-03' }, // SSS criterion
+            { from: 'G9-TRI-7.5-02', to: 'G9-TRI-7.5-03' }, // RHS criterion
+            { from: 'G9-TRI-7.5-03', to: 'G9-TRI-7.5-04' }, // choosing before applying
+            { from: 'G9-LA-7-01', to: 'G9-TRI-7.5-04' }, // proof skills
+            { from: 'G9-TRI-7.5-03', to: 'G9-TRI-7.6-01' }, // all criteria understanding
+            
+            // Grade 10 - Similarity
+            { from: 'G9-TRI-7.2-01', to: 'G10-TRI-6.1-01' }, // congruence concept
+            { from: 'G9-TRI-7.6-01', to: 'G10-TRI-6.1-01' }, // all congruence mastery
+            { from: 'G10-TRI-6.1-01', to: 'G10-TRI-6.2-01' }, // differentiate before identify
+            { from: 'G8-UQ-3.1-01', to: 'G10-TRI-6.2-01' }, // polygon understanding
+            { from: 'G10-TRI-6.2-01', to: 'G10-TRI-6.2-02' }, // concept before verification
+            { from: 'G6-LA-2.9-02', to: 'G10-TRI-6.2-02' }, // angle measurement
+            { from: 'G7-TTIL-7.3-04', to: 'G10-TRI-6.2-02' }, // angle properties
+            { from: 'G10-TRI-6.2-02', to: 'G10-TRI-6.2-03' }, // proportional sides for scale
+            
+            // Basic Proportionality Theorem
+            { from: 'G7-PIL-5.3-02', to: 'G10-TRI-6.3-01' }, // parallel lines
+            { from: 'G9-LA-6-01', to: 'G10-TRI-6.3-01' }, // parallel line properties
+            { from: 'G10-TRI-6.2-03', to: 'G10-TRI-6.3-01' }, // proportionality concept
+            { from: 'G10-TRI-6.3-01', to: 'G10-TRI-6.3-02' }, // theorem before proof
+            { from: 'G9-LA-7-01', to: 'G10-TRI-6.3-02' }, // proof skills
+            { from: 'G10-TRI-6.3-02', to: 'G10-TRI-6.3-03' }, // theorem before converse
+            { from: 'G9-LA-6-02', to: 'G10-TRI-6.3-03' }, // converse reasoning
+            { from: 'G10-TRI-6.3-01', to: 'G10-TRI-6.3-04' }, // BPT for complex problems
+            { from: 'G10-TRI-6.2-02', to: 'G10-TRI-6.3-04' }, // similarity verification
+            
+            // Similarity Criteria
+            { from: 'G10-TRI-6.2-01', to: 'G10-TRI-6.4-01' }, // similarity concept
+            { from: 'G7-TTIL-7.3-04', to: 'G10-TRI-6.4-01' }, // angle sum property
+            { from: 'G9-TRI-7.3-06', to: 'G10-TRI-6.4-01' }, // AAA for congruence understanding
+            { from: 'G10-TRI-6.2-03', to: 'G10-TRI-6.4-02' }, // scale factor
+            { from: 'G9-TRI-7.5-01', to: 'G10-TRI-6.4-02' }, // SSS congruence parallel
+            { from: 'G10-TRI-6.2-03', to: 'G10-TRI-6.4-03' }, // proportional sides
+            { from: 'G9-TRI-7.3-02', to: 'G10-TRI-6.4-03' }, // SAS congruence parallel
+            { from: 'G10-TRI-6.4-01', to: 'G10-TRI-6.4-04' }, // AA criterion
+            { from: 'G10-TRI-6.4-02', to: 'G10-TRI-6.4-04' }, // SSS criterion
+            { from: 'G10-TRI-6.4-03', to: 'G10-TRI-6.4-04' }, // SAS criterion
+            { from: 'G9-TRI-7.5-03', to: 'G10-TRI-6.4-04' }, // choosing experience
+            { from: 'G10-TRI-6.4-04', to: 'G10-TRI-6.4-05' }, // choosing for applications
+            { from: 'G10-TRI-6.2-03', to: 'G10-TRI-6.4-05' }, // scale factor calculations
+            { from: 'G10-TRI-6.1-01', to: 'G10-TRI-6.4-06' }, // basic differentiation
+            { from: 'G10-TRI-6.4-04', to: 'G10-TRI-6.4-06' }, // all similarity criteria
+            { from: 'G9-TRI-7.6-01', to: 'G10-TRI-6.4-06' }, // all congruence criteria
+            
+            // Advanced Topics
+            { from: 'G7-TTIL-7.4-01', to: 'G10-TRI-ADV-01' }, // altitude construction
+            { from: 'G10-TRI-6.4-02', to: 'G10-TRI-ADV-01' }, // SSS similarity
+            { from: 'G10-TRI-6.2-03', to: 'G10-TRI-ADV-01' }, // scale factor
+            { from: 'G9-TRI-7.5-02', to: 'G10-TRI-ADV-02' }, // right triangles
+            { from: 'G10-TRI-6.4-01', to: 'G10-TRI-ADV-02' }, // AA similarity
+            { from: 'G10-TRI-6.3-04', to: 'G10-TRI-ADV-02' }, // complex similar triangles
+            { from: 'G9-LA-7-01', to: 'G10-TRI-ADV-02' } // proof skills
+        ];
+
+        // State variables
+        let selectedStation = null;
+        let selectedLevels = {1: false, 2: false, 3: false};
+        let currentTransform = d3.zoomIdentity;
+
+        // Initialize level checkboxes
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('level-1').addEventListener('change', (e) => {
+                selectedLevels[1] = e.target.checked;
+                updateVisualization();
+            });
+            document.getElementById('level-2').addEventListener('change', (e) => {
+                selectedLevels[2] = e.target.checked;
+                updateVisualization();
+            });
+            document.getElementById('level-3').addEventListener('change', (e) => {
+                selectedLevels[3] = e.target.checked;
+                updateVisualization();
+            });
+        });
+
+        // Calculate prerequisite levels for each competency
+        function calculatePrerequisiteLevels(targetCode) {
+            const levels = { 1: [], 2: [], 3: [] };
+            const allAssigned = new Set(); // Track all assigned prerequisites to avoid duplicates
+            
+            // Level 1: Direct prerequisites (immediate dependencies)
+            const directPrereqs = connections.filter(c => c.to === targetCode);
+            directPrereqs.forEach(prereq => {
+                const station = stations.find(s => s.code === prereq.from);
+                if (station && !allAssigned.has(station.code)) {
+                    levels[1].push(station);
+                    allAssigned.add(station.code);
+                }
+            });
+            
+            // Level 2: Direct prerequisites of Level 1 stations
+            const level2Candidates = new Set();
+            levels[1].forEach(level1Station => {
+                const prereqsOfLevel1 = connections.filter(c => c.to === level1Station.code);
+                prereqsOfLevel1.forEach(prereq => {
+                    if (!allAssigned.has(prereq.from)) {
+                        level2Candidates.add(prereq.from);
+                    }
+                });
+            });
+            
+            level2Candidates.forEach(code => {
+                const station = stations.find(s => s.code === code);
+                if (station) {
+                    levels[2].push(station);
+                    allAssigned.add(station.code);
+                }
+            });
+            
+            // Level 3: Direct prerequisites of Level 2 stations
+            const level3Candidates = new Set();
+            levels[2].forEach(level2Station => {
+                const prereqsOfLevel2 = connections.filter(c => c.to === level2Station.code);
+                prereqsOfLevel2.forEach(prereq => {
+                    if (!allAssigned.has(prereq.from)) {
+                        level3Candidates.add(prereq.from);
+                    }
+                });
+            });
+            
+            level3Candidates.forEach(code => {
+                const station = stations.find(s => s.code === code);
+                if (station) {
+                    levels[3].push(station);
+                    allAssigned.add(station.code);
+                }
+            });
+            
+            // Additional pass: Find any remaining prerequisites that are essential but not yet captured
+            // This ensures we don't miss critical prerequisites due to the strict level-by-level approach
+            const allCaptured = new Set([...allAssigned, targetCode]);
+            const missingPrereqs = new Set();
+            
+            // Check if all prerequisites of captured competencies are also captured
+            function checkCompleteness(stationCode, visited = new Set()) {
+                if (visited.has(stationCode)) return;
+                visited.add(stationCode);
+                
+                const prereqs = connections.filter(c => c.to === stationCode);
+                prereqs.forEach(prereq => {
+                    if (!allCaptured.has(prereq.from)) {
+                        missingPrereqs.add(prereq.from);
+                    }
+                    checkCompleteness(prereq.from, visited);
+                });
+            }
+            
+            // Check from target and all assigned prerequisites
+            checkCompleteness(targetCode);
+            levels[1].forEach(s => checkCompleteness(s.code));
+            levels[2].forEach(s => checkCompleteness(s.code));
+            levels[3].forEach(s => checkCompleteness(s.code));
+            
+            // Add missing prerequisites to Level 3 (as they are the most fundamental)
+            missingPrereqs.forEach(code => {
+                const station = stations.find(s => s.code === code);
+                if (station && !allAssigned.has(station.code)) {
+                    levels[3].push(station);
+                    allAssigned.add(station.code);
+                }
+            });
+            
+            // Sort each level by grade and position
+            Object.keys(levels).forEach(level => {
+                levels[level].sort((a, b) => {
+                    if (a.grade !== b.grade) return a.grade - b.grade;
+                    if (a.x !== b.x) return a.x - b.x;
+                    return a.y - b.y;
+                });
+            });
+            
+            return levels;
+        }
+        
+        function initializeVisualization() {
+            const svg = d3.select('#metro-svg');
+            const container = document.querySelector('.main-area');
+            const width = 1800;
+            const height = 1200;
+            
+            svg.attr('width', width).attr('height', height);
+            
+            // Create main group for zooming
+            const g = svg.append('g');
+            
+            // Add zoom behavior
+            const zoom = d3.zoom()
+                .scaleExtent([0.1, 4])
+                .on('zoom', (event) => {
+                    currentTransform = event.transform;
+                    g.attr('transform', event.transform);
+                });
+            
+            svg.call(zoom);
+            
+            // Draw grade zones
+            const gradeZones = [
+                { grade: 6, x: 50, y: 150, width: 250, height: 600 },
+                { grade: 7, x: 320, y: 150, width: 250, height: 700 },
+                { grade: 8, x: 590, y: 150, width: 150, height: 300 },
+                { grade: 9, x: 760, y: 150, width: 400, height: 950 },
+                { grade: 10, x: 1180, y: 150, width: 300, height: 850 }
+            ];
+            
+            const zones = g.selectAll('.grade-zone')
+                .data(gradeZones)
+                .enter()
+                .append('g');
+            
+            zones.append('rect')
+                .attr('class', d => `grade-zone grade-${d.grade}-zone`)
+                .attr('x', d => d.x)
+                .attr('y', d => d.y)
+                .attr('width', d => d.width)
+                .attr('height', d => d.height)
+                .attr('rx', 10);
+            
+            zones.append('text')
+                .attr('class', d => `zone-label${d.grade === 10 ? ' grade-10' : ''}`)
+                .attr('x', d => d.x + d.width / 2)
+                .attr('y', d => d.y + 30)
+                .attr('text-anchor', 'middle')
+                .text(d => `GRADE ${d.grade}`);
+            
+            // Draw connection paths
+            const connectionsGroup = g.append('g').attr('class', 'connections-group');
+            
+            connections.forEach(conn => {
+                const fromStation = stations.find(s => s.code === conn.from);
+                const toStation = stations.find(s => s.code === conn.to);
+                
+                if (fromStation && toStation) {
+                    connectionsGroup.append('line')
+                        .attr('class', 'connection-path')
+                        .attr('x1', fromStation.x)
+                        .attr('y1', fromStation.y)
+                        .attr('x2', toStation.x)
+                        .attr('y2', toStation.y)
+                        .attr('data-from', conn.from)
+                        .attr('data-to', conn.to);
+                }
+            });
+            
+            // Add subsection headers for Grade 10
+            const subsectionHeaders = g.append('g').attr('class', 'subsection-headers');
+            
+            const subsectionData = [
+                { name: 'Introduction', y: 190 },
+                { name: 'Similar Figures', y: 270 },
+                { name: 'Similarity of Triangles', y: 450 },
+                { name: 'Criteria for Similarity of Triangles', y: 580 },
+                { name: 'Extended Learning', y: 760 }
+            ];
+            
+            subsectionHeaders.selectAll('.subsection-header')
+                .data(subsectionData)
+                .enter()
+                .append('text')
+                .attr('class', 'subsection-header')
+                .attr('x', 1190)
+                .attr('y', d => d.y)
+                .attr('text-anchor', 'start')
+                .style('font-size', '13px')
+                .style('font-weight', 'bold')
+                .style('fill', '#5a4a00')
+                .style('opacity', 0.8)
+                .text(d => d.name);
+            
+            // Create a group for sequential paths (will be drawn on top)
+            const sequentialGroup = g.append('g').attr('class', 'sequential-group');
+            
+            // Create pencil indicator
+            const pencilGroup = g.append('g')
+                .attr('class', 'pencil-indicator')
+                .attr('opacity', 0);
+            
+            // Create pencil SVG - positioned so tip is at origin (0,0)
+            const pencilPath = pencilGroup.append('g')
+                .attr('transform', 'scale(2) rotate(-45) translate(-3, -3)'); // Center the tip at origin
+            
+            // Pencil tip (dark gray) - tip starts at (3,0)
+            pencilPath.append('path')
+                .attr('d', 'M0,10 L3,0 L6,10 Z')
+                .attr('fill', '#4a4a4a')
+                .attr('stroke', '#2a2a2a')
+                .attr('stroke-width', '0.5');
+            
+            // Wood part (beige)
+            pencilPath.append('rect')
+                .attr('x', 0)
+                .attr('y', 10)
+                .attr('width', 6)
+                .attr('height', 8)
+                .attr('fill', '#f4d1a6')
+                .attr('stroke', '#d4a574')
+                .attr('stroke-width', '0.5');
+            
+            // Yellow body
+            pencilPath.append('rect')
+                .attr('x', 0)
+                .attr('y', 18)
+                .attr('width', 6)
+                .attr('height', 20)
+                .attr('fill', '#ffd700')
+                .attr('stroke', '#e6c200')
+                .attr('stroke-width', '0.5');
+            
+            // Orange stripe
+            pencilPath.append('rect')
+                .attr('x', 0)
+                .attr('y', 26)
+                .attr('width', 6)
+                .attr('height', 4)
+                .attr('fill', '#ff8c00')
+                .attr('stroke', '#e67c00')
+                .attr('stroke-width', '0.5');
+            
+            // Metal band
+            pencilPath.append('rect')
+                .attr('x', 0)
+                .attr('y', 38)
+                .attr('width', 6)
+                .attr('height', 3)
+                .attr('fill', '#c0c0c0')
+                .attr('stroke', '#a0a0a0')
+                .attr('stroke-width', '0.5');
+            
+            // Pink eraser
+            pencilPath.append('rect')
+                .attr('x', 0)
+                .attr('y', 41)
+                .attr('width', 6)
+                .attr('height', 6)
+                .attr('rx', 1)
+                .attr('fill', '#ffb6c1')
+                .attr('stroke', '#ff91a4')
+                .attr('stroke-width', '0.5');
+            
+            // Graphite line in center
+            pencilPath.append('line')
+                .attr('x1', 3)
+                .attr('y1', 3)
+                .attr('x2', 3)
+                .attr('y2', 10)
+                .attr('stroke', '#2a2a2a')
+                .attr('stroke-width', '1');
+            
+            // Store pencil reference
+            window.pencilIndicator = pencilGroup;
+            
+            // Draw stations
+            const stationsGroup = g.append('g').attr('class', 'stations-group');
+            
+            const stationGroups = stationsGroup.selectAll('.station')
+                .data(stations)
+                .enter()
+                .append('g')
+                .attr('class', d => `station grade-${d.grade}`)
+                .attr('transform', d => `translate(${d.x}, ${d.y})`)
+                .on('mouseenter', handleStationHover)
+                .on('mouseleave', handleStationLeave)
+                .on('click', handleStationClick);
+            
+            stationGroups.append('circle')
+                .attr('class', 'station-circle')
+                .attr('r', 8);
+            
+            stationGroups.append('text')
+                .attr('class', 'station-label')
+                .attr('x', 15)
+                .attr('y', 4)
+                .text(d => d.code);
+            
+            // Store references
+            window.svg = svg;
+            window.g = g;
+            window.zoom = zoom;
+            
+            // Set initial zoom optimized for ThinkPad screens
+            // Most ThinkPads have 1366x768 or 1920x1080 resolution
+            // With left panel of 320px, the main area is typically 1046px or 1600px wide
+            const containerWidth = container.clientWidth;
+            const containerHeight = container.clientHeight;
+            
+            // Content spans from x:50 to x:1480 (width ~1430) and y:150 to y:1000 (height ~850)
+            let scale, translateX, translateY;
+            
+            if (containerWidth < 1200) {
+                // Smaller ThinkPad screen (1366x768)
+                scale = 0.65;
+                translateX = -20;
+                translateY = -80;
+            } else {
+                // Larger ThinkPad screen (1920x1080) or bigger
+                scale = 0.75;
+                translateX = 50;
+                translateY = -50;
+            }
+            
+            // Apply initial transform
+            svg.call(zoom.transform, d3.zoomIdentity.translate(translateX, translateY).scale(scale));
+        }
+        
+        // Interaction handlers
+        function handleStationHover(event, d) {
+            const tooltip = document.querySelector('.tooltip');
+            const data = competencyData[d.code];
+            
+            if (d.grade === 10) {
+                // Grade 10 format
+                tooltip.innerHTML = `
+                    <div class="code">${d.code}</div>
+                    <strong>Competency:</strong> ${data ? data.competency : d.name}<br><br>
+                    <strong>Misconceptions:</strong> ${data && data.misconception !== 'NA' ? data.misconception : 'No common misconceptions listed'}
+                `;
+            } else {
+                // Other grades format
+                const subsection = data ? (data.subsection === 'NA' ? 'Extended Learning' : data.subsection) : 'Extended Learning';
+                tooltip.innerHTML = `
+                    <div class="code">${d.code}</div>
+                    <strong>Chapter:</strong> ${subsection}<br><br>
+                    <strong>Competency:</strong> ${data ? data.competency : d.name}<br><br>
+                    <strong>Misconceptions:</strong> ${data && data.misconception !== 'NA' ? data.misconception : 'No common misconceptions listed'}
+                `;
+            }
+            
+            tooltip.classList.add('show');
+            tooltip.style.left = (event.pageX + 10) + 'px';
+            tooltip.style.top = (event.pageY - 10) + 'px';
+        }
+        
+        function handleStationLeave() {
+            document.querySelector('.tooltip').classList.remove('show');
+        }
+        
+        function handleStationClick(event, d) {
+            // If clicking the same station, deselect it
+            if (selectedStation === d.code) {
+                selectedStation = null;
+                updateVisualization();
+                return;
+            }
+            
+            selectedStation = d.code;
+            updateVisualization();
+        }
+        
+        function updateVisualization() {
+            // Clear previous highlights and paths
+            d3.selectAll('.station').classed('highlighted', false).classed('active', false);
+            d3.selectAll('.sequential-path').remove();
+            
+            // Hide pencil indicator if no station selected
+            if (!selectedStation) {
+                window.pencilIndicator.classed('active', false);
+                document.getElementById('prerequisites-panel').classList.remove('show');
+                return;
+            }
+            
+            // Find the selected station element and highlight it
+            let selectedStationData = null;
+            d3.selectAll('.station').each(function(d) {
+                if (d.code === selectedStation) {
+                    d3.select(this).classed('highlighted', true);
+                    selectedStationData = d;
+                }
+            });
+            
+            // Position and show pencil indicator with tip pointing to station
+            if (selectedStationData && window.pencilIndicator) {
+                // Simply position the pencil at the station center
+                // The pencil SVG is already set up so the tip is at the origin
+                window.pencilIndicator
+                    .attr('transform', `translate(${selectedStationData.x}, ${selectedStationData.y})`)
+                    .classed('active', true);
+            }
+            
+            // Calculate prerequisite levels
+            const levels = calculatePrerequisiteLevels(selectedStation);
+            const targetStation = stations.find(s => s.code === selectedStation);
+            
+            // Check if any level is selected
+            const anyLevelSelected = selectedLevels[1] || selectedLevels[2] || selectedLevels[3];
+            
+            // Only show prerequisites if at least one level is selected
+            if (anyLevelSelected) {
+                // Create connections for each level separately
+                const levelConnections = {
+                    1: [],
+                    2: [],
+                    3: []
+                };
+                
+                // For each level, find all connections between stations in the path
+                [1, 2, 3].forEach(level => {
+                    if (!selectedLevels[level]) return;
+                    
+                    const levelStations = levels[level];
+                    const allStationsUpToLevel = [];
+                    
+                    // Include all stations up to this level plus the target
+                    for (let i = 1; i <= level; i++) {
+                        if (selectedLevels[i]) {  // Only include if this level is selected
+                            allStationsUpToLevel.push(...levels[i]);
+                        }
+                    }
+                    allStationsUpToLevel.push(targetStation);
+                    
+                    // Find connections between these stations
+                    connections.forEach(conn => {
+                        const fromStation = allStationsUpToLevel.find(s => s.code === conn.from);
+                        const toStation = allStationsUpToLevel.find(s => s.code === conn.to);
+                        
+                        if (fromStation && toStation) {
+                            levelConnections[level].push({
+                                from: fromStation,
+                                to: toStation,
+                                level: level
+                            });
+                        }
+                    });
+                });
+                
+                // Draw paths for each level with appropriate colors
+                const sequentialGroup = d3.select('.sequential-group');
+                let pathIndex = 0;
+                
+                [3, 2, 1].forEach(level => { // Draw in reverse order so level 1 is on top
+                    if (!selectedLevels[level]) return;
+                    
+                    levelConnections[level].forEach((conn, i) => {
+                        sequentialGroup.append('line')
+                            .attr('class', `sequential-path level-${level}`)
+                            .attr('x1', conn.from.x)
+                            .attr('y1', conn.from.y)
+                            .attr('x2', conn.to.x)
+                            .attr('y2', conn.to.y)
+                            .style('opacity', 0)
+                            .transition()
+                            .delay(pathIndex * 30)
+                            .duration(200)
+                            .style('opacity', 1)
+                            .attr('class', `sequential-path level-${level} active`);
+                        
+                        pathIndex++;
+                    });
+                });
+                
+                // Highlight all stations in selected levels
+                const allSelectedStations = [];
+                [1, 2, 3].forEach(level => {
+                    if (selectedLevels[level]) {
+                        allSelectedStations.push(...levels[level]);
+                    }
+                });
+                allSelectedStations.push(targetStation);
+                
+                // Animate station highlights
+                allSelectedStations.forEach((station, idx) => {
+                    setTimeout(() => {
+                        d3.selectAll('.station').each(function(sd) {
+                            if (sd.code === station.code) {
+                                d3.select(this).classed('active', true);
+                            }
+                        });
+                    }, idx * 30);
+                });
+            }
+            
+            // Show prerequisites panel
+            showPrerequisitesPanel(targetStation, levels);
+        }
+        
+        function showPrerequisitesPanel(targetStation, levels) {
+            const panel = document.getElementById('prerequisites-panel');
+            const content = document.getElementById('prerequisites-content');
+            
+            // Clear previous content
+            content.innerHTML = '';
+            
+            // Add header
+            const header = document.createElement('div');
+            header.innerHTML = `<strong>${targetStation.code}</strong><br>${targetStation.name}`;
+            header.style.marginBottom = '15px';
+            header.style.fontSize = '12px';
+            header.style.color = '#2c3e50';
+            content.appendChild(header);
+            
+            // Check if any level is selected
+            const anyLevelSelected = selectedLevels[1] || selectedLevels[2] || selectedLevels[3];
+            
+            if (!anyLevelSelected) {
+                const noSelectionMessage = document.createElement('div');
+                noSelectionMessage.style.fontSize = '11px';
+                noSelectionMessage.style.color = '#666';
+                noSelectionMessage.style.fontStyle = 'italic';
+                noSelectionMessage.innerHTML = 'Select prerequisite levels to view dependencies';
+                content.appendChild(noSelectionMessage);
+            } else {
+                // Show each selected level
+                [1, 2, 3].forEach(level => {
+                    if (selectedLevels[level] && levels[level].length > 0) {
+                        const section = document.createElement('div');
+                        section.className = 'prerequisite-section';
+                        
+                        const sectionHeader = document.createElement('h4');
+                        sectionHeader.innerHTML = `<span class="level-indicator level-${level}">${level}</span>`;
+                        
+                        if (level === 1) {
+                            sectionHeader.innerHTML += 'Immediate Prerequisites';
+                        } else if (level === 2) {
+                            sectionHeader.innerHTML += 'Supporting Prerequisites';
+                        } else {
+                            sectionHeader.innerHTML += 'Foundational Prerequisites';
+                        }
+                        
+                        section.appendChild(sectionHeader);
+                        
+                        levels[level].forEach(prereq => {
+                            const item = document.createElement('div');
+                            item.className = `prerequisite-item level-${level} grade-${prereq.grade}`;
+                            item.innerHTML = `
+                                <div class="prerequisite-code">${prereq.code}</div>
+                                <div class="prerequisite-desc">${prereq.name}</div>
+                            `;
+                            section.appendChild(item);
+                        });
+                        
+                        content.appendChild(section);
+                    }
+                });
+                
+                // Add summary only if levels are selected
+                const selectedLevelCounts = [1, 2, 3].filter(level => selectedLevels[level]);
+                if (selectedLevelCounts.length > 0) {
+                    const counts = {
+                        1: selectedLevels[1] ? levels[1].length : 0,
+                        2: selectedLevels[2] ? levels[2].length : 0,
+                        3: selectedLevels[3] ? levels[3].length : 0
+                    };
+                    const totalCount = counts[1] + counts[2] + counts[3];
+                    
+                    const summary = document.createElement('div');
+                    summary.style.marginTop = '15px';
+                    summary.style.fontSize = '11px';
+                    summary.style.color = '#666';
+                    summary.style.borderTop = '1px solid #e0e0e0';
+                    summary.style.paddingTop = '10px';
+                    
+                    const summaryParts = [];
+                    if (selectedLevels[1]) summaryParts.push(`Immediate: ${counts[1]}`);
+                    if (selectedLevels[2]) summaryParts.push(`Supporting: ${counts[2]}`);
+                    if (selectedLevels[3]) summaryParts.push(`Foundational: ${counts[3]}`);
+                    
+                    summary.innerHTML = `
+                        <em>Showing ${totalCount} Prerequisites<br>
+                        ${summaryParts.join(', ')}</em>
+                    `;
+                    content.appendChild(summary);
+                }
+            }
+            
+            // Show the panel
+            panel.classList.add('show');
+        }
+        
+        // Zoom controls
+        function zoomIn() {
+            window.svg.transition().duration(300).call(window.zoom.scaleBy, 1.3);
+        }
+        
+        function zoomOut() {
+            window.svg.transition().duration(300).call(window.zoom.scaleBy, 0.7);
+        }
+        
+        function resetZoom() {
+            window.svg.transition().duration(750).call(
+                window.zoom.transform,
+                d3.zoomIdentity
+            );
+        }
+        
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', initializeVisualization);
+        
+        // Handle resize
+        window.addEventListener('resize', () => {
+            // SVG size remains fixed for scrolling
+        });
+    </script>
+</body>
+</html>
